@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 0
+    path: Assets/Scenes/SampleScene.unity
+    guid: 55daccc09a3b69647bbab145b54a3ab3
+  - enabled: 1
+    path: Assets/_MyProject/Scenes/SplashPersistent.unity
+    guid: b73e613375623ff439d6ae8fb17218bf
+  - enabled: 1
+    path: Assets/_MyProject/Scenes/PlayScene.unity
+    guid: 8761857bd13910b4b832808b83dfa5ac
+  - enabled: 1
+    path: Assets/_MyProject/Scenes/Menu.unity
+    guid: 178cc0433603b1f46a5ddf7661be1a46
+  - enabled: 1
+    path: Assets/_MyProject/Scenes/EndScene.unity
+    guid: 4c6b2cb4a9466c54791177014541d01e
+  m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
+    Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 9bec1ce6a03ccba4b9a8215241b32e63, type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: a49cadc1a815591479693b955ccf08c1, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 985fdffee33a5944396199c6b7145dd4, type: 3}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 1a4c68ca72a83449f938d669337cb305, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: a9a6963505ddf7f4d886008c6dc86122, type: 2}
+  m_UseUCBPForAssetBundles: 0
