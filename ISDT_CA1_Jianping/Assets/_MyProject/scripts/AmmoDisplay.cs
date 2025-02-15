@@ -1,8 +1,9 @@
 using UnityEngine;
+using TMPro;
 
 public class AmmoDisplay : MonoBehaviour
 {
-    [SerializeField] private TMPro.TextMeshProUGUI ammoText;
+    [SerializeField] private TextMeshProUGUI ammoText;
     [SerializeField] private Gun gun;
 
     private void Start()
@@ -12,15 +13,24 @@ public class AmmoDisplay : MonoBehaviour
             Debug.LogError("Gun reference not set in AmmoDisplay!");
             return;
         }
-
-        UpdateAmmoDisplay(0); // Initialize with 0
+        
+        // Don't initialize with 0, wait for actual magazine data
+        UpdateAmmoDisplay(0, 0);
     }
 
-    public void UpdateAmmoDisplay(int currentAmmo)
+    public void UpdateAmmoDisplay(int currentAmmo, int maxCapacity)
     {
         if (ammoText != null)
         {
-            ammoText.text = $"Ammo: {currentAmmo}";
+            ammoText.text = $"{currentAmmo}";
+        }
+    }
+
+    public void ClearDisplay()
+    {
+        if (ammoText != null)
+        {
+            ammoText.text = "0";
         }
     }
 }

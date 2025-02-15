@@ -30,6 +30,10 @@ public class Gun : MonoBehaviour
     [SerializeField] private Transform magazineSocket;
     [SerializeField] private MagazineData defaultMagazine;
 
+    [Header("UI Components")]
+    [SerializeField] private AmmoDisplay ammoDisplay;
+
+
     private bool isTwoHanded = false;
     private MagazineData currentMagazine;
     private float LastShootTime;
@@ -97,71 +101,76 @@ public class Gun : MonoBehaviour
     }
 
     public void Shoot()
-{
-    Debug.Log("Shoot method called");
-
-    if (LastShootTime + ShootDelay >= Time.time)
     {
-        Debug.Log("Shot delayed - too soon since last shot");
-        return;
-    }
+        Debug.Log("Shoot method called");
 
-    if (currentMagazine == null || currentMagazine.currentAmmo <= 0)
-    {
-        Debug.Log("Cannot shoot - no ammo");
-        if (!isSlideBack)
-            StartCoroutine(AnimateSlideBack());
-        return;
-    }
-
-    // Play muzzle flash
-    if (MuzzleFlash != null)
-    {
-        MuzzleFlash.Play();
-        Debug.Log("Playing muzzle flash effect");
-    }
-
-    // Play shooting effects
-    if (ShootingSystem != null)
-    {
-        ShootingSystem.Play();
-        Debug.Log("Playing shooting system effect");
-    }
-
-    Vector3 direction = GetDirection();
-
-    if (Physics.Raycast(BulletSpawnPoint.position, direction, out RaycastHit hit, float.MaxValue, Mask))
-    {
-        // Create a trail effect
-        TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
-        StartCoroutine(SpawnTrail(trail, hit.point, hit.normal, true));
-        Debug.Log($"Hit target at {hit.point}");
-
-        // Check if the hit object has an EnemyAI script
-        EnemyAI enemy = hit.collider.GetComponent<EnemyAI>();
-        if (enemy != null)
+        if (LastShootTime + ShootDelay >= Time.time)
         {
-            // Apply damage to the enemy
-            enemy.TakeDamage(20); // Adjust the damage value as needed
+            Debug.Log("Shot delayed - too soon since last shot");
+            return;
         }
+
+        if (currentMagazine == null || currentMagazine.currentAmmo <= 0)
+        {
+            Debug.Log("Cannot shoot - no ammo");
+            if (!isSlideBack)
+                StartCoroutine(AnimateSlideBack());
+            return;
+        }
+
+        // Play muzzle flash
+        if (MuzzleFlash != null)
+        {
+            MuzzleFlash.Play();
+            Debug.Log("Playing muzzle flash effect");
+        }
+
+        // Play shooting effects
+        if (ShootingSystem != null)
+        {
+            ShootingSystem.Play();
+            Debug.Log("Playing shooting system effect");
+        }
+
+        Vector3 direction = GetDirection();
+
+        if (Physics.Raycast(BulletSpawnPoint.position, direction, out RaycastHit hit, float.MaxValue, Mask))
+        {
+            // Create a trail effect
+            TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
+            StartCoroutine(SpawnTrail(trail, hit.point, hit.normal, true));
+            Debug.Log($"Hit target at {hit.point}");
+
+            // Check if the hit object has an EnemyAI script
+            EnemyAI enemy = hit.collider.GetComponent<EnemyAI>();
+            if (enemy != null)
+            {
+                // Apply damage to the enemy
+                enemy.TakeDamage(20); // Adjust the damage value as needed
+            }
+        }
+        else
+        {
+            TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
+            StartCoroutine(SpawnTrail(trail, BulletSpawnPoint.position + direction * 100, Vector3.zero, false));
+            Debug.Log("Shot fired but missed");
+        }
+
+        currentMagazine.currentAmmo--;
+        LastShootTime = Time.time;
+
+        if (ammoDisplay != null)
+        {
+            ammoDisplay.UpdateAmmoDisplay(currentMagazine.currentAmmo, currentMagazine.maxCapacity);
+        }
+
+        Debug.Log($"Rounds remaining: {currentMagazine.currentAmmo}");
+
+        if (currentMagazine.currentAmmo <= 0)
+            StartCoroutine(AnimateSlideBack());
+        else
+            StartCoroutine(AnimateSlide());
     }
-    else
-    {
-        TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
-        StartCoroutine(SpawnTrail(trail, BulletSpawnPoint.position + direction * 100, Vector3.zero, false));
-        Debug.Log("Shot fired but missed");
-    }
-
-    currentMagazine.currentAmmo--;
-    LastShootTime = Time.time;
-
-    Debug.Log($"Rounds remaining: {currentMagazine.currentAmmo}");
-
-    if (currentMagazine.currentAmmo <= 0)
-        StartCoroutine(AnimateSlideBack());
-    else
-        StartCoroutine(AnimateSlide());
-}
 
     private Vector3 GetDirection()
     {
@@ -253,7 +262,13 @@ public class Gun : MonoBehaviour
         if (magazineObject != null)
         {
             currentMagazine = magazineObject.GetMagazineData();
-            Debug.Log($"New magazine attached with {currentMagazine.currentAmmo} rounds");
+            Debug.Log($"New magazine attached with {currentMagazine.currentAmmo}/{currentMagazine.maxCapacity} rounds");
+
+            // Update UI with both current ammo and max capacity
+            if (ammoDisplay != null)
+            {
+                ammoDisplay.UpdateAmmoDisplay(currentMagazine.currentAmmo, currentMagazine.maxCapacity);
+            }
 
             if (isSlideBack && currentMagazine.currentAmmo > 0)
                 ReleaseSlideLock();
@@ -264,6 +279,12 @@ public class Gun : MonoBehaviour
     {
         currentMagazine = null;
         Debug.Log("Magazine released");
+
+        // Show "No Magazine" instead of 0
+        if (ammoDisplay != null)
+        {
+            ammoDisplay.ClearDisplay();
+        }
     }
 
     public void ReleaseSlideLock()
