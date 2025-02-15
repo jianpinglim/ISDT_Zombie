@@ -2,15 +2,25 @@ using UnityEngine;
 
 public class AmmoDisplay : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] private TMPro.TextMeshProUGUI ammoText;
+    [SerializeField] private Gun gun;
+
+    private void Start()
     {
-        
+        if (gun == null)
+        {
+            Debug.LogError("Gun reference not set in AmmoDisplay!");
+            return;
+        }
+
+        UpdateAmmoDisplay(0); // Initialize with 0
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UpdateAmmoDisplay(int currentAmmo)
     {
-        
+        if (ammoText != null)
+        {
+            ammoText.text = $"Ammo: {currentAmmo}";
+        }
     }
 }
