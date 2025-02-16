@@ -57,25 +57,25 @@ public class LeverTracker : MonoBehaviour
         completionTime = Time.time - startTime;
         Debug.Log($"Lever {leverNumber} was pulled! Time: {completionTime:F2} seconds");
 
-        // Record the lever pull data
+        // Record and export data immediately for each lever pull
         leverDataList.Add(new LeverData(leverNumber, completionTime));
-
-        // If all levers are pulled, export the data
-        if (leverDataList.Count >= totalLevers)
-        {
-            ExportToCSV();
-        }
+        ExportToCSV();
     }
+
 
     private void ExportToCSV()
     {
         Debug.Log("Exporting lever data to CSV...");
-        string dataPath = Path.Combine(Application.persistentDataPath, "LeverData");
+        // Use Application.dataPath to get the Assets folder path
+        string dataPath = Path.Combine(Application.dataPath, "_MyProject", "LeverData");
+
+        Debug.Log($"Attempting to save to: {dataPath}");
 
         // Create the directory if it doesn't exist
         if (!Directory.Exists(dataPath))
         {
             Directory.CreateDirectory(dataPath);
+            Debug.Log($"Created directory at: {dataPath}");
         }
 
         string filePath = Path.Combine(dataPath, "LeverResults.csv");
@@ -83,35 +83,25 @@ public class LeverTracker : MonoBehaviour
 
         try
         {
-            // If file doesn't exist, create it with headers
-            // If it exists, append new data
-            using (StreamWriter writer = new StreamWriter(filePath, true)) // true for append mode
+            using (StreamWriter writer = new StreamWriter(filePath, true))
             {
-                // Write headers only if file is new
                 if (!fileExists)
                 {
                     writer.WriteLine("Session Date,Lever Number,Completion Time (seconds)");
+                    Debug.Log("Created new CSV file with headers");
                 }
 
-                // Add timestamp for this session's data
+                // Write only the most recent lever pull
+                var latestData = leverDataList[leverDataList.Count - 1];
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-                // Write data for each lever
-                foreach (var data in leverDataList)
-                {
-                    writer.WriteLine($"{timestamp},{data.leverNumber},{data.completionTime:F2}");
-                }
-
-                writer.WriteLine(); // Add blank line between sessions
+                writer.WriteLine($"{timestamp},{latestData.leverNumber},{latestData.completionTime:F2}");
             }
             Debug.Log($"Data exported successfully to: {filePath}");
-
-            // Clear the list after successful export
-            leverDataList.Clear();
         }
         catch (Exception e)
         {
             Debug.LogError($"Failed to export data: {e.Message}");
+            Debug.LogError($"Stack trace: {e.StackTrace}");
         }
     }
 
