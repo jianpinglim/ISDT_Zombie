@@ -2,5 +2,14 @@ using UnityEngine;
 
 public class HandData : MonoBehaviour
 {
-    pi
+    public enum HandModelType
+    {
+        Left,
+        Right
+    }
+
+    public HandModelType handModelType;
+    public Transform root;
+    public Animator animator;
+    public Transform[] fingerBones;
 }
