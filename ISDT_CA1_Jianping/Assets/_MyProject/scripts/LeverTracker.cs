@@ -1,14 +1,32 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class LeverTracker : MonoBehaviour
 {
+    //initialize the hinge joint and conditons for the lever
     private new HingeJoint hingeJoint;
-    public float pullThreshold = 45f; // Angle at which we consider the lever "pulled"
+    public float pullThreshold = 45f;
     private bool isPulled = false;
+
+    // Data structure to store lever data from labtask
+    [Header("Tracking Settings")]
+    public int leverNumber = 1; // Assign different numbers for each lever
+    public static int totalLevers = 3;
+    private float startTime;
+    private float completionTime;
+    private static List<LeverData> leverDataList = new List<LeverData>();
+    private static bool gameStarted = false;
 
     void Start()
     {
         hingeJoint = GetComponent<HingeJoint>();
+        if (!gameStarted)
+        {
+            gameStarted = true;
+            startTime = Time.time;
+        }
     }
 
     void Update()
@@ -36,8 +54,41 @@ public class LeverTracker : MonoBehaviour
 
     private void OnLeverPulled()
     {
-        Debug.Log("Lever was pulled!");
-        // Add your pulled logic here
+        completionTime = Time.time - startTime;
+        Debug.Log($"Lever {leverNumber} was pulled! Time: {completionTime:F2} seconds");
+        
+        // Record the lever pull data
+        leverDataList.Add(new LeverData(leverNumber, completionTime));
+
+        // If all levers are pulled, export the data
+        if (leverDataList.Count >= totalLevers)
+        {
+            ExportToCSV();
+        }
+    }
+
+     private void ExportToCSV()
+    {
+        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string filePath = Path.Combine(desktopPath, $"LeverData_{timestamp}.csv");
+
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                writer.WriteLine("Lever Number,Completion Time (seconds)");
+                foreach (var data in leverDataList)
+                {
+                    writer.WriteLine($"{data.leverNumber},{data.completionTime:F2}");
+                }
+            }
+            Debug.Log($"Data exported successfully to {filePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to export data: {e.Message}");
+        }
     }
 
     private void OnLeverReleased()
@@ -50,5 +101,17 @@ public class LeverTracker : MonoBehaviour
     public bool IsLeverPulled()
     {
         return isPulled;
+    }
+}
+
+public class LeverData
+{
+    public int leverNumber;
+    public float completionTime;
+
+    public LeverData(int number, float time)
+    {
+        leverNumber = number;
+        completionTime = time;
     }
 }
