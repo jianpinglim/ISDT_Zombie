@@ -69,8 +69,8 @@ public class LeverTracker : MonoBehaviour
 
     private void ExportToCSV()
     {
-        // Get the project's Assets/_MyProject/LeverData path
-        string dataPath = Path.Combine(Application.dataPath, "_MyProject", "LeverData");
+        Debug.Log("Exporting lever data to CSV...");
+        string dataPath = Path.Combine(Application.persistentDataPath, "LeverData");
 
         // Create the directory if it doesn't exist
         if (!Directory.Exists(dataPath))
@@ -78,20 +78,36 @@ public class LeverTracker : MonoBehaviour
             Directory.CreateDirectory(dataPath);
         }
 
-        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string filePath = Path.Combine(dataPath, $"LeverData_{timestamp}.csv");
+        string filePath = Path.Combine(dataPath, "LeverResults.csv");
+        bool fileExists = File.Exists(filePath);
 
         try
         {
-            using (StreamWriter writer = new StreamWriter(filePath))
+            // If file doesn't exist, create it with headers
+            // If it exists, append new data
+            using (StreamWriter writer = new StreamWriter(filePath, true)) // true for append mode
             {
-                writer.WriteLine("Lever Number,Completion Time (seconds)");
+                // Write headers only if file is new
+                if (!fileExists)
+                {
+                    writer.WriteLine("Session Date,Lever Number,Completion Time (seconds)");
+                }
+
+                // Add timestamp for this session's data
+                string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                // Write data for each lever
                 foreach (var data in leverDataList)
                 {
-                    writer.WriteLine($"{data.leverNumber},{data.completionTime:F2}");
+                    writer.WriteLine($"{timestamp},{data.leverNumber},{data.completionTime:F2}");
                 }
+
+                writer.WriteLine(); // Add blank line between sessions
             }
-            Debug.Log($"Data exported successfully to {filePath}");
+            Debug.Log($"Data exported successfully to: {filePath}");
+
+            // Clear the list after successful export
+            leverDataList.Clear();
         }
         catch (Exception e)
         {
