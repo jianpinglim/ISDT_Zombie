@@ -56,7 +56,7 @@ public class LeverTracker : MonoBehaviour
     {
         completionTime = Time.time - startTime;
         Debug.Log($"Lever {leverNumber} was pulled! Time: {completionTime:F2} seconds");
-        
+
         // Record the lever pull data
         leverDataList.Add(new LeverData(leverNumber, completionTime));
 
@@ -67,11 +67,19 @@ public class LeverTracker : MonoBehaviour
         }
     }
 
-     private void ExportToCSV()
+    private void ExportToCSV()
     {
-        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        // Get the project's Assets/_MyProject/LeverData path
+        string dataPath = Path.Combine(Application.dataPath, "_MyProject", "LeverData");
+
+        // Create the directory if it doesn't exist
+        if (!Directory.Exists(dataPath))
+        {
+            Directory.CreateDirectory(dataPath);
+        }
+
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string filePath = Path.Combine(desktopPath, $"LeverData_{timestamp}.csv");
+        string filePath = Path.Combine(dataPath, $"LeverData_{timestamp}.csv");
 
         try
         {

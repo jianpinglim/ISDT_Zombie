@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1093039891153891512}
   - component: {fileID: 6676535279612584904}
   - component: {fileID: 5934194449764355690}
-  m_Layer: 14
+  m_Layer: 0
   m_Name: handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 585949964199173742}
   - component: {fileID: 1428715863188607105}
   - component: {fileID: 235784247689650030}
-  m_Layer: 14
+  m_Layer: 0
   m_Name: lever
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -423,3 +423,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pullThreshold: 45
+  leverNumber: 1
