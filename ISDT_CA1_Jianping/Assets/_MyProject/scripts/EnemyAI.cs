@@ -17,10 +17,17 @@ public class EnemyAI : MonoBehaviour
     [Header("References")]
     private Animator animator;
     private NavMeshAgent m_agent;
-    private DissolveEffect dissolveEffect;
+
+    [Header("Attack Settings")]
+    public float attackRange = 2f;
+    public float attackCooldown = 2f;
+    private float nextAttackTime;
+
     [Header("Animation")]
     [SerializeField] private string chaseAnimParam = "IsChasing";
     [SerializeField] private string idleAnimParam = "IsIdle";
+    [SerializeField] private string attackAnimParam = "IsAttacking";
+    [SerializeField] private string dieAnimParam = "IsDead";
     private bool isDead = false;
     private float distanceToPlayer;
 
@@ -29,7 +36,6 @@ public class EnemyAI : MonoBehaviour
         // Initialize components
         animator = GetComponent<Animator>();
         m_agent = GetComponent<NavMeshAgent>();
-        dissolveEffect = GetComponent<DissolveEffect>();
 
         if (m_agent == null)
         {
@@ -51,7 +57,7 @@ public class EnemyAI : MonoBehaviour
         m_agent.speed = moveSpeed;
         m_agent.angularSpeed = rotationSpeed * 100;
         m_agent.acceleration = 8f;
-        m_agent.stoppingDistance = 2f; // Add stopping distance
+        m_agent.stoppingDistance = 2f;
 
         currentHealth = maxHealth;
     }
@@ -62,7 +68,11 @@ public class EnemyAI : MonoBehaviour
 
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        if (distanceToPlayer <= chaseRange)
+        if (distanceToPlayer <= attackRange)
+        {
+            AttackPlayer();
+        }
+        else if (distanceToPlayer <= chaseRange)
         {
             ChasePlayer();
         }
@@ -70,32 +80,60 @@ public class EnemyAI : MonoBehaviour
         {
             StopChasing();
         }
+    }
 
-        UpdateAnimation();
+    private void AttackPlayer()
+    {
+        // Stop moving when attacking
+        m_agent.isStopped = true;
+        m_agent.velocity = Vector3.zero;
+
+        // Face the player while attacking
+        Vector3 direction = (player.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+
+        // Only attack if cooldown has passed
+        if (Time.time >= nextAttackTime)
+        {
+            // Trigger attack animation
+            animator.SetBool(chaseAnimParam, false);
+            animator.SetBool(idleAnimParam, false);
+            animator.SetBool(attackAnimParam, true);
+
+            nextAttackTime = Time.time + attackCooldown;
+            Debug.Log($"Zombie attacking! Animation param: {attackAnimParam}");
+        }
+        else
+        {
+            // Ensure attack animation is off if not attacking
+            animator.SetBool(attackAnimParam, false);
+        }
     }
 
     private void ChasePlayer()
     {
         m_agent.isStopped = false;
         m_agent.SetDestination(player.position);
-
-        // Ensure speed is maintained
         m_agent.speed = moveSpeed;
 
-        // Face the target
         Vector3 direction = (player.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
+        // Reset attack animation and set chase animation
+        animator.SetBool(attackAnimParam, false);
         SetAnimationState(true);
     }
 
     private void StopChasing()
     {
         m_agent.isStopped = true;
+
+        // Reset all animations except idle
+        animator.SetBool(attackAnimParam, false);
         SetAnimationState(false);
     }
-
 
     private void UpdateAnimation()
     {
@@ -136,31 +174,49 @@ public class EnemyAI : MonoBehaviour
 
     private void Die()
     {
+        if (isDead) return; // Prevent multiple calls
+
         isDead = true;
         Debug.Log("Enemy died");
 
-        // Disable NavMeshAgent and physics
-        m_agent.enabled = false;
-        if (GetComponent<Collider>() != null)
+        // Disable NavMeshAgent
+        if (m_agent != null)
         {
-            GetComponent<Collider>().enabled = false;
+            m_agent.enabled = false;
         }
 
-        // Stop animations
-        animator.SetBool("IsChasing", false);
-
-        // Start dissolve effect if available
-        if (dissolveEffect != null)
+        // Disable Rigidbody
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            dissolveEffect.StartDissolve();
-            // Destroy object after dissolve effect
-            Destroy(gameObject, dissolveEffect.dissolveSpeed + 0.1f);
+            rb.isKinematic = true; // Make it kinematic so it doesn't fall
+            rb.linearVelocity = Vector3.zero; // Stop any existing motion
+            rb.detectCollisions = false; // Disable collision detection
+
+        }
+
+        // Trigger dying animation
+        if (animator != null)
+        {
+            animator.SetBool(dieAnimParam, true);
+            Debug.Log($"Set {dieAnimParam} to true");
         }
         else
         {
-            // If no dissolve effect, destroy immediately
-            Destroy(gameObject);
+            Debug.LogError("Animator is null!");
         }
+
+        // Destroy object after a delay
+        StartCoroutine(DestroyAfterAnimation());
+    }
+
+    private IEnumerator DestroyAfterAnimation()
+    {
+        // Wait for the animation to finish (adjust the time as needed)
+        yield return new WaitForSeconds(3.2f);
+
+        // Destroy object
+        Destroy(gameObject);
     }
 
     // Visual debugging
@@ -176,5 +232,9 @@ public class EnemyAI : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, player.position);
         }
+
+        // Draw attack range
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
