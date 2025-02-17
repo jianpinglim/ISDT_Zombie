@@ -4,69 +4,179 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
-    public Transform player; // Reference to the player's transform
-    public float chaseRange = 10f; // Range at which the enemy starts chasing
-    public int maxHealth = 100; // Maximum health of the enemy
-    private int currentHealth; // Current health of the enemy
+    [Header("Chase Settings")]
+    public Transform player;
+    public float chaseRange = 10f;
+    public float moveSpeed = 3f;
+    public float rotationSpeed = 5f;
+
+    [Header("Health Settings")]
+    public int maxHealth = 100;
+    private int currentHealth;
+
+    [Header("References")]
     private Animator animator;
-    private bool isDead = false; // Track if the enemy is dead
-    private NavMeshAgent m_agent;  
+    private NavMeshAgent m_agent;
+    private DissolveEffect dissolveEffect;
+    [Header("Animation")]
+    [SerializeField] private string chaseAnimParam = "IsChasing";
+    [SerializeField] private string idleAnimParam = "IsIdle";
+    [SerializeField] private float animationDampTime = 0.1f;
+
+    private bool isDead = false;
+    private float distanceToPlayer;
+
     void Start()
     {
+        // Initialize components
         animator = GetComponent<Animator>();
-        currentHealth = maxHealth; // Initialize health
-        m_agent = GetComponent<NavMeshAgent>();  // Add this line
+        m_agent = GetComponent<NavMeshAgent>();
+        dissolveEffect = GetComponent<DissolveEffect>();
+
+        if (m_agent == null)
+        {
+            Debug.LogError($"NavMeshAgent missing on {gameObject.name}!");
+            return;
+        }
+
+        if (player == null)
+        {
+            // Try to find player in scene
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if (player == null)
+            {
+                Debug.LogError("Player reference not set and cannot be found!");
+                return;
+            }
+        }
+
+        m_agent.speed = moveSpeed;
+        m_agent.angularSpeed = rotationSpeed * 100;
+        m_agent.acceleration = 8f;
+        m_agent.stoppingDistance = 2f; // Add stopping distance
+
+        currentHealth = maxHealth;
     }
 
     void Update()
     {
-        if (isDead) return; // Stop all behavior if the enemy is dead
+        if (isDead || player == null || m_agent == null) return;
 
-        // Calculate the distance between the enemy and the player
-        // Check if the player is within chase range
-        if (m_agent.velocity.magnitude != 0)
+        distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= chaseRange)
         {
-            animator.SetBool("IsChasing", true);
+            ChasePlayer();
         }
         else
         {
-            animator.SetBool("IsChasing", false);
+            StopChasing();
         }
+
+        UpdateAnimation();
     }
 
-    void OnAnimatorMove()
+    private void ChasePlayer()
     {
-        if(animator.GetBool("IsChasing"))
+        m_agent.isStopped = false;
+        m_agent.SetDestination(player.position);
+
+        // Ensure speed is maintained
+        m_agent.speed = moveSpeed;
+
+        // Face the target
+        Vector3 direction = (player.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+
+        SetAnimationState(true);
+    }
+
+    private void StopChasing()
+    {
+        m_agent.isStopped = true;
+        SetAnimationState(false);
+    }
+
+
+    private void UpdateAnimation()
+    {
+        // Check if the agent is actually moving
+        float speed = m_agent.velocity.magnitude;
+        bool isMoving = speed > 0.1f;
+
+        // Update both animation states
+        SetAnimationState(isMoving);
+    }
+
+    private void SetAnimationState(bool isChasing)
+    {
+        animator.SetBool(chaseAnimParam, isChasing);
+
+        if (isChasing)
         {
-            m_agent.speed = (animator.deltaPosition / Time.deltaTime).magnitude;
+            animator.SetBool(idleAnimParam, false);
+        }
+        else
+        {
+            animator.SetBool(idleAnimParam, true);
         }
     }
 
-    // Method to handle taking damage
     public void TakeDamage(int damageAmount)
     {
-        if (isDead) return; // If already dead, do nothing
+        if (isDead) return;
 
-        currentHealth -= damageAmount; // Reduce health
+        currentHealth -= damageAmount;
         Debug.Log($"Enemy took {damageAmount} damage. Current health: {currentHealth}");
 
-        // Check if the enemy is dead
         if (currentHealth <= 0)
         {
             Die();
         }
     }
 
-    // Method to handle enemy death
     private void Die()
     {
         isDead = true;
         Debug.Log("Enemy died");
 
-        // Disable chasing behavior
+        // Disable NavMeshAgent and physics
+        m_agent.enabled = false;
+        if (GetComponent<Collider>() != null)
+        {
+            GetComponent<Collider>().enabled = false;
+        }
+
+        // Stop animations
         animator.SetBool("IsChasing", false);
 
-        // Get the DissolveEffect component and start the dissolve
+        // Start dissolve effect if available
+        if (dissolveEffect != null)
+        {
+            dissolveEffect.StartDissolve();
+            // Destroy object after dissolve effect
+            Destroy(gameObject, dissolveEffect.dissolveSpeed + 0.1f);
+        }
+        else
+        {
+            // If no dissolve effect, destroy immediately
+            Destroy(gameObject);
+        }
     }
 
+    // Visual debugging
+    private void OnDrawGizmosSelected()
+    {
+        // Draw chase range
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, chaseRange);
+
+        // Draw line to player if within range
+        if (player != null && Vector3.Distance(transform.position, player.position) <= chaseRange)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, player.position);
+        }
+    }
 }
