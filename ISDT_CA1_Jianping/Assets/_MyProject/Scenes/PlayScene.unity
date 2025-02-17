@@ -2801,7 +2801,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.11
+      value: -6.14
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2839,6 +2839,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 8804795166771358170, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8804795166771358170, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
+      propertyPath: 'm_Materials.Array.data[2]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 043af05739c9b0b48b8395d0e867d507, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2858,6 +2866,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
       insertIndex: -1
       addedObject: {fileID: 149589926}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 149589927}
   m_SourcePrefab: {fileID: 100100000, guid: bd38b50f98de07343a076b5a70d42297, type: 3}
 --- !u!1 &149589915 stripped
 GameObject:
@@ -2981,6 +2992,21 @@ CapsuleCollider:
   m_Height: 1.8472979
   m_Direction: 1
   m_Center: {x: 0.037779745, y: 0.8570648, z: -0.01954684}
+--- !u!114 &149589927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 149589915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f44e069ede90f1343bc813ec5b7c1b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dissolveMaterial: {fileID: 2100000, guid: 043af05739c9b0b48b8395d0e867d507, type: 2}
+  dissolveDuration: 2
+  dissolveStrength: 0
 --- !u!4 &158817222 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 510914917145526211, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}

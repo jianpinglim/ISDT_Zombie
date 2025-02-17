@@ -17,6 +17,8 @@ public class EnemyAI : MonoBehaviour
     [Header("References")]
     private Animator animator;
     private NavMeshAgent m_agent;
+    private Dissolver dissolver; // Add this reference
+
 
     [Header("Attack Settings")]
     public float attackRange = 2f;
@@ -36,6 +38,8 @@ public class EnemyAI : MonoBehaviour
         // Initialize components
         animator = GetComponent<Animator>();
         m_agent = GetComponent<NavMeshAgent>();
+        dissolver = GetComponent<Dissolver>(); // Add this line
+
 
         if (m_agent == null)
         {
@@ -204,6 +208,16 @@ public class EnemyAI : MonoBehaviour
         else
         {
             Debug.LogError("Animator is null!");
+        }
+
+        if (dissolver != null)
+        {
+            StartCoroutine(dissolver.dissolver());
+            Debug.Log("Started dissolve effect");
+        }
+        else
+        {
+            Debug.LogError("Dissolver component not found!");
         }
 
         // Destroy object after a delay
