@@ -8,12 +8,14 @@ public class LeverTracker : MonoBehaviour
     //initialize the hinge joint and conditons for the lever
     private new HingeJoint hingeJoint;
     public float pullThreshold = 45f;
+    public static int leversPulled = 0;
+    public static event System.Action onLeverPulled;
     private bool isPulled = false;
 
     // Data structure to store lever data from labtask
     [Header("Tracking Settings")]
     public int leverNumber = 1; // Assign different numbers for each lever
-    public static int totalLevers = 3;
+    public static int totalLevers = 4;
     private float startTime;
     private float completionTime;
     private static List<LeverData> leverDataList = new List<LeverData>();
@@ -54,12 +56,25 @@ public class LeverTracker : MonoBehaviour
 
     private void OnLeverPulled()
     {
+        if (!isPulled)  // Only increment if this lever hasn't been pulled before
+        {
+            leversPulled++;
+            Debug.Log($"Lever pulled. Total levers: {leversPulled}");
+            onLeverPulled?.Invoke();  // Make sure this is being called
+        }
+
         completionTime = Time.time - startTime;
         Debug.Log($"Lever {leverNumber} was pulled! Time: {completionTime:F2} seconds");
 
         // Record and export data immediately for each lever pull
         leverDataList.Add(new LeverData(leverNumber, completionTime));
         ExportToCSV();
+    }
+
+    // Add this method to reset the counter
+    public static void ResetLeverCount()
+    {
+        leversPulled = 0;
     }
 
 

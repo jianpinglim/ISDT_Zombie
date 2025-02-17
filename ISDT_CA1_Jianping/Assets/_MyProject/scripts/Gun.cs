@@ -82,13 +82,11 @@ public class Gun : MonoBehaviour
 
     private void OnTriggerPull(ActivateEventArgs args)
     {
-        Debug.Log("Trigger pulled");
         Shoot();
     }
 
     public void OnSecondHandGrab(SelectEnterEventArgs args)
     {
-        Debug.Log("Second hand grabbed");
         isTwoHanded = true;
         currentSpread = TightSpreadVariance;
     }
@@ -102,11 +100,10 @@ public class Gun : MonoBehaviour
 
     public void Shoot()
     {
-        Debug.Log("Shoot method called");
+
 
         if (LastShootTime + ShootDelay >= Time.time)
         {
-            Debug.Log("Shot delayed - too soon since last shot");
             return;
         }
 
@@ -122,14 +119,12 @@ public class Gun : MonoBehaviour
         if (MuzzleFlash != null)
         {
             MuzzleFlash.Play();
-            Debug.Log("Playing muzzle flash effect");
         }
 
         // Play shooting effects
         if (ShootingSystem != null)
         {
             ShootingSystem.Play();
-            Debug.Log("Playing shooting system effect");
         }
 
         Vector3 direction = GetDirection();
@@ -139,7 +134,6 @@ public class Gun : MonoBehaviour
             // Create a trail effect
             TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
             StartCoroutine(SpawnTrail(trail, hit.point, hit.normal, true));
-            Debug.Log($"Hit target at {hit.point}");
 
             // Check if the hit object has an EnemyAI script
             EnemyAI enemy = hit.collider.GetComponent<EnemyAI>();
@@ -153,7 +147,6 @@ public class Gun : MonoBehaviour
         {
             TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
             StartCoroutine(SpawnTrail(trail, BulletSpawnPoint.position + direction * 100, Vector3.zero, false));
-            Debug.Log("Shot fired but missed");
         }
 
         currentMagazine.currentAmmo--;
@@ -262,7 +255,6 @@ public class Gun : MonoBehaviour
         if (magazineObject != null)
         {
             currentMagazine = magazineObject.GetMagazineData();
-            Debug.Log($"New magazine attached with {currentMagazine.currentAmmo}/{currentMagazine.maxCapacity} rounds");
 
             // Update UI with both current ammo and max capacity
             if (ammoDisplay != null)
@@ -278,7 +270,6 @@ public class Gun : MonoBehaviour
     public void ReleaseMagazine()
     {
         currentMagazine = null;
-        Debug.Log("Magazine released");
 
         // Show "No Magazine" instead of 0
         if (ammoDisplay != null)
