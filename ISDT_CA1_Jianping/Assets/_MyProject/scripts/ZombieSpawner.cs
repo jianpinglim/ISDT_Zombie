@@ -11,18 +11,18 @@ public class ZombieSpawner : MonoBehaviour
     public float spawnRadius = 10f;        // Radius for where zombies appear
 
     [Header("Zombie Movement Settings")]
-    public float zombieSpeed = 3f;         // Fixed speed for newly spawned zombies
+    public float zombieSpeed = 2f;         // Fixed speed for newly spawned zombies
 
     void Start()
     {
         // Schedule repeated spawns
+
         InvokeRepeating(nameof(SpawnZombies), initialSpawnDelay, spawnInterval);
     }
 
     void SpawnZombies()
     {
-        // Always spawn 1 or 2 zombies
-        int spawnCount = Random.Range(1, 3); // range is [1, 3), so 1 or 2
+        int spawnCount = Random.Range(1, 2);
 
         for (int i = 0; i < spawnCount; i++)
         {
@@ -36,7 +36,10 @@ public class ZombieSpawner : MonoBehaviour
             if (ai != null)
             {
                 ai.moveSpeed = zombieSpeed;
+                ai.InitializeAnimations(); // Add this call
             }
         }
     }
+
+    
 }

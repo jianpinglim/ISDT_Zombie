@@ -5,7 +5,7 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour
 {
     [Header("Chase Settings")]
-    public GameObject player;
+    private GameObject player;  // Changed to private since we'll find it automatically
     public float chaseRange = 10f;
     public float moveSpeed = 3f;
     public float rotationSpeed = 5f;
@@ -38,8 +38,7 @@ public class EnemyAI : MonoBehaviour
         // Initialize components
         animator = GetComponent<Animator>();
         m_agent = GetComponent<NavMeshAgent>();
-        dissolver = GetComponent<Dissolver>(); // Add this line
-
+        dissolver = GetComponent<Dissolver>();
 
         if (m_agent == null)
         {
@@ -47,22 +46,17 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+        // Find player by tag
+        player = GameObject.FindGameObjectWithTag("Player");
         if (player == null)
         {
-            // Try to find player in scene
-            player = GameObject.FindGameObjectWithTag("Player");
-            if (player == null)
-            {
-                Debug.LogError("Player reference not set and cannot be found!");
-                return;
-            }
+            Debug.LogError("Cannot find object with tag 'Player' in the scene!");
+            return;
         }
 
+        // Set up NavMeshAgent parameters
         m_agent.speed = moveSpeed;
-        m_agent.angularSpeed = rotationSpeed * 100;
-        m_agent.acceleration = 8f;
-        m_agent.stoppingDistance = 2f;
-
+        m_agent.stoppingDistance = attackRange; // Stop when within attack range
         currentHealth = maxHealth;
     }
 
@@ -70,48 +64,60 @@ public class EnemyAI : MonoBehaviour
     {
         if (isDead || player == null || m_agent == null) return;
 
+        if (!animator.gameObject.activeSelf || !animator.enabled)
+        {
+            Debug.LogWarning($"Animator disabled on {gameObject.name}. Re-enabling...");
+            animator.enabled = true;
+        }
+
         distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
-        if (distanceToPlayer <= attackRange)
+        if (distanceToPlayer <= chaseRange)
         {
-            AttackPlayer();
-        }
-        else if (distanceToPlayer <= chaseRange)
-        {
-            ChasePlayer();
+            m_agent.SetDestination(player.transform.position);
+
+            if (distanceToPlayer <= attackRange)
+            {
+                AttackPlayer();
+            }
         }
         else
         {
-            StopChasing();
+            if (m_agent.hasPath)
+            {
+                m_agent.ResetPath();
+            }
+        }
+
+        // Update animations last
+        UpdateAnimationState();
+    }
+
+    public void InitializeAnimations()
+    {
+        if (animator != null)
+        {
+            // Reset all animation states
+            animator.Rebind();
+            animator.Update(0f);
+
+            // Set initial state
+            animator.SetBool(idleAnimParam, true);
+            animator.SetBool(chaseAnimParam, false);
+            animator.SetBool(attackAnimParam, false);
+            animator.SetBool(dieAnimParam, false);
         }
     }
 
+
+
     private void AttackPlayer()
     {
-        // Stop moving when attacking
-        m_agent.isStopped = true;
-        m_agent.velocity = Vector3.zero;
-
-        // Face the player while attacking
-        Vector3 direction = (player.transform.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
-
-        // Only attack if cooldown has passed
         if (Time.time >= nextAttackTime)
         {
-            // Trigger attack animation
-            animator.SetBool(chaseAnimParam, false);
-            animator.SetBool(idleAnimParam, false);
-            animator.SetBool(attackAnimParam, true);
-
             nextAttackTime = Time.time + attackCooldown;
-            Debug.Log($"Zombie attacking! Animation param: {attackAnimParam}");
-        }
-        else
-        {
-            // Ensure attack animation is off if not attacking
-            animator.SetBool(attackAnimParam, false);
+            Debug.Log("Zombie attacking!");
+            // Add attack logic here
         }
     }
 
@@ -139,16 +145,6 @@ public class EnemyAI : MonoBehaviour
         SetAnimationState(false);
     }
 
-    private void UpdateAnimation()
-    {
-        // Check if the agent is actually moving
-        float speed = m_agent.velocity.magnitude;
-        bool isMoving = speed > 0.1f;
-
-        // Update both animation states
-        SetAnimationState(isMoving);
-    }
-
     private void SetAnimationState(bool isChasing)
     {
         animator.SetBool(chaseAnimParam, isChasing);
@@ -156,6 +152,30 @@ public class EnemyAI : MonoBehaviour
         if (isChasing)
         {
             animator.SetBool(idleAnimParam, false);
+        }
+        else
+        {
+            animator.SetBool(idleAnimParam, true);
+        }
+    }
+
+    private void UpdateAnimationState()
+    {
+        if (animator == null) return;
+
+        // Reset all states first
+        animator.SetBool(idleAnimParam, false);
+        animator.SetBool(chaseAnimParam, false);
+        animator.SetBool(attackAnimParam, false);
+
+        // Then set the appropriate state
+        if (distanceToPlayer <= attackRange)
+        {
+            animator.SetBool(attackAnimParam, true);
+        }
+        else if (distanceToPlayer <= chaseRange)
+        {
+            animator.SetBool(chaseAnimParam, true);
         }
         else
         {
