@@ -21,8 +21,6 @@ public class EnemyAI : MonoBehaviour
     [Header("Animation")]
     [SerializeField] private string chaseAnimParam = "IsChasing";
     [SerializeField] private string idleAnimParam = "IsIdle";
-    [SerializeField] private float animationDampTime = 0.1f;
-
     private bool isDead = false;
     private float distanceToPlayer;
 
