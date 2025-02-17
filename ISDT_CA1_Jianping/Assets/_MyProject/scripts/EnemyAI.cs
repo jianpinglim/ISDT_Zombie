@@ -5,7 +5,7 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour
 {
     [Header("Chase Settings")]
-    public Transform player;
+    public GameObject player;
     public float chaseRange = 10f;
     public float moveSpeed = 3f;
     public float rotationSpeed = 5f;
@@ -50,7 +50,7 @@ public class EnemyAI : MonoBehaviour
         if (player == null)
         {
             // Try to find player in scene
-            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            player = GameObject.FindGameObjectWithTag("Player");
             if (player == null)
             {
                 Debug.LogError("Player reference not set and cannot be found!");
@@ -70,7 +70,7 @@ public class EnemyAI : MonoBehaviour
     {
         if (isDead || player == null || m_agent == null) return;
 
-        distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
         if (distanceToPlayer <= attackRange)
         {
@@ -93,7 +93,7 @@ public class EnemyAI : MonoBehaviour
         m_agent.velocity = Vector3.zero;
 
         // Face the player while attacking
-        Vector3 direction = (player.position - transform.position).normalized;
+        Vector3 direction = (player.transform.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
@@ -118,10 +118,10 @@ public class EnemyAI : MonoBehaviour
     private void ChasePlayer()
     {
         m_agent.isStopped = false;
-        m_agent.SetDestination(player.position);
+        m_agent.SetDestination(player.transform.position);
         m_agent.speed = moveSpeed;
 
-        Vector3 direction = (player.position - transform.position).normalized;
+        Vector3 direction = (player.transform.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
@@ -168,8 +168,6 @@ public class EnemyAI : MonoBehaviour
         if (isDead) return;
 
         currentHealth -= damageAmount;
-        Debug.Log($"Enemy took {damageAmount} damage. Current health: {currentHealth}");
-
         if (currentHealth <= 0)
         {
             Die();
@@ -179,9 +177,9 @@ public class EnemyAI : MonoBehaviour
     private void Die()
     {
         if (isDead) return; // Prevent multiple calls
+        ZombieKillsManager.ZombieKilled();
 
         isDead = true;
-        Debug.Log("Enemy died");
 
         // Disable NavMeshAgent
         if (m_agent != null)
@@ -194,7 +192,6 @@ public class EnemyAI : MonoBehaviour
         if (rb != null)
         {
             rb.isKinematic = true; // Make it kinematic so it doesn't fall
-            rb.linearVelocity = Vector3.zero; // Stop any existing motion
             rb.detectCollisions = false; // Disable collision detection
 
         }
@@ -241,10 +238,10 @@ public class EnemyAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, chaseRange);
 
         // Draw line to player if within range
-        if (player != null && Vector3.Distance(transform.position, player.position) <= chaseRange)
+        if (player != null && Vector3.Distance(transform.position, player.transform.position) <= chaseRange)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, player.position);
+            Gizmos.DrawLine(transform.position, player.transform.position);
         }
 
         // Draw attack range

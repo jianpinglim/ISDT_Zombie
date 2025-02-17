@@ -43,7 +43,6 @@ public class Gun : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("Gun Initializing...");
 
         if (primaryGrabInteractable != null)
         {
@@ -156,8 +155,6 @@ public class Gun : MonoBehaviour
         {
             ammoDisplay.UpdateAmmoDisplay(currentMagazine.currentAmmo, currentMagazine.maxCapacity);
         }
-
-        Debug.Log($"Rounds remaining: {currentMagazine.currentAmmo}");
 
         if (currentMagazine.currentAmmo <= 0)
             StartCoroutine(AnimateSlideBack());

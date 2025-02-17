@@ -33,40 +33,34 @@ public class LeverTracker : MonoBehaviour
 
     void Update()
     {
-        // Get the current angle of the hinge
+        // If the lever is already pulled, don't do anything
+        if (isPulled) return;
+
+        // Check the current hinge angle
         float currentAngle = hingeJoint.angle;
 
-        // Check if lever state has changed
-        bool wasPulled = isPulled;
-        isPulled = currentAngle >= pullThreshold;
-
-        // If state changed, you can trigger events
-        if (wasPulled != isPulled)
+        // Only trigger OnLeverPulled if it crosses the threshold
+        if (currentAngle >= pullThreshold)
         {
-            if (isPulled)
-            {
-                OnLeverPulled();
-            }
-            else
-            {
-                OnLeverReleased();
-            }
+            isPulled = true;
+            OnLeverPulled();
         }
     }
 
+
     private void OnLeverPulled()
     {
-        if (!isPulled)  // Only increment if this lever hasn't been pulled before
-        {
-            leversPulled++;
-            Debug.Log($"Lever pulled. Total levers: {leversPulled}");
-            onLeverPulled?.Invoke();  // Make sure this is being called
-        }
+        leversPulled++;
+        Debug.Log($"Lever pulled. Total levers: {leversPulled}");
+
+        // Invoke the event so the UI knows to update
+        onLeverPulled?.Invoke();
+        Debug.Log("Lever pulled event invoked");
 
         completionTime = Time.time - startTime;
         Debug.Log($"Lever {leverNumber} was pulled! Time: {completionTime:F2} seconds");
 
-        // Record and export data immediately for each lever pull
+        // Record and export data for each lever pull
         leverDataList.Add(new LeverData(leverNumber, completionTime));
         ExportToCSV();
     }

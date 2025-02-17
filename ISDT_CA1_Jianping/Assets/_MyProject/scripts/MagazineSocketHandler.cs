@@ -16,24 +16,20 @@ public class MagazineSocketHandler : MonoBehaviour
         {
             socketInteractor.selectEntered.AddListener(OnMagazineInserted);
             socketInteractor.selectExited.AddListener(OnMagazineRemoved);
-            Debug.Log("Socket handler initialized");
         }
     }
 
     private void OnMagazineInserted(SelectEnterEventArgs args)
     {
-        Debug.Log("Magazine insertion attempted");
         if (args.interactableObject.transform.TryGetComponent<VRMagazine>(out var magazine))
         {
             gunScript.AttachMagazine(magazine);
-            Debug.Log("Magazine successfully attached");
         }
     }
 
     private void OnMagazineRemoved(SelectExitEventArgs args)
     {
         gunScript.ReleaseMagazine();
-        Debug.Log("Magazine removed");
     }
 
     private void OnDestroy()
