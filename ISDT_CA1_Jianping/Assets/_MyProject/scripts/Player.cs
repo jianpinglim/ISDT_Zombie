@@ -1,12 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private Transform defaultSpawnPoint; // Reference to spawn point in scene
+    private const string MENU_SCENE = "Menu";
+    private const string PLAY_SCENE = "PlayScene";
+    [SerializeField] private Transform defaultSpawnPoint;
 
     void Start()
     {
+        // Make XR Rig persistent if not already
+        if (transform.root.gameObject.scene.name != "DontDestroyOnLoad")
+        {
+            DontDestroyOnLoad(transform.root.gameObject);
+        }
+
         if (SaveDataHolder.shouldLoadSave && SaveDataHolder.savedData != null)
         {
             Debug.Log("Loading saved game state...");
@@ -55,23 +64,57 @@ public class Player : MonoBehaviour
 
     public void SaveAndQuit()
     {
+        // Save the game data
         SaveManager.SaveGame(this);
+        Debug.Log("Game saved successfully");
+
+        // Quit the game
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     public void LoadGame()
     {
-        Debug.Log("Loading saved game...");
+        Debug.Log("Attempting to load saved game...");
         SaveData saveData = SaveManager.LoadGame();
+
         if (saveData != null)
         {
-            // Store save data in static class for access after scene load
             SaveDataHolder.savedData = saveData;
             SaveDataHolder.shouldLoadSave = true;
-
-            // Load game scene
-            SceneManager.LoadScene("Game"); // Replace "Game" with your actual game scene name
+            SceneManager.LoadScene(PLAY_SCENE);
+        }
+        else
+        {
+            Debug.LogWarning("No save file found!");
         }
     }
+
+    public void StartNewGame()
+    {
+        Debug.Log("Starting new game...");
+        // Reset all game state
+        ZombieKillsManager.totalKills = 0;
+        LeverTracker.ResetAllLevers();
+
+        // Use spawn point for new game
+        GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
+        if (spawnPoint != null)
+        {
+            transform.position = spawnPoint.transform.position;
+            transform.rotation = spawnPoint.transform.rotation;
+        }
+
+        SaveDataHolder.shouldLoadSave = false;
+        SaveDataHolder.savedData = null;
+
+        // Load play scene
+        SceneManager.LoadScene(PLAY_SCENE);
+    }
+
 }
 
 public static class SaveDataHolder
