@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -8,27 +9,13 @@ public class EnemyAI : MonoBehaviour
     public int maxHealth = 100; // Maximum health of the enemy
     private int currentHealth; // Current health of the enemy
     private Animator animator;
-    private Material enemyMaterial; // Material using the dissolve shader
     private bool isDead = false; // Track if the enemy is dead
-
-    [Header("Dissolve Settings")]
-    public float dissolveSpeed = 1f; // Speed of the dissolve effect
-
+    private NavMeshAgent m_agent;  
     void Start()
     {
         animator = GetComponent<Animator>();
         currentHealth = maxHealth; // Initialize health
-
-        // Get the material using the dissolve shader
-        Renderer renderer = GetComponentInChildren<Renderer>();
-        if (renderer != null)
-        {
-            enemyMaterial = renderer.material;
-        }
-        else
-        {
-            Debug.LogError("No renderer found on the enemy!");
-        }
+        m_agent = GetComponent<NavMeshAgent>();  // Add this line
     }
 
     void Update()
@@ -36,16 +23,22 @@ public class EnemyAI : MonoBehaviour
         if (isDead) return; // Stop all behavior if the enemy is dead
 
         // Calculate the distance between the enemy and the player
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
         // Check if the player is within chase range
-        if (distanceToPlayer <= chaseRange)
+        if (m_agent.velocity.magnitude != 0)
         {
-            animator.SetBool("IsChasing", true); // Transition to chasing animation
+            animator.SetBool("IsChasing", true);
         }
         else
         {
-            animator.SetBool("IsChasing", false); // Transition back to idle animation
+            animator.SetBool("IsChasing", false);
+        }
+    }
+
+    void OnAnimatorMove()
+    {
+        if(animator.GetBool("IsChasing"))
+        {
+            m_agent.speed = (animator.deltaPosition / Time.deltaTime).magnitude;
         }
     }
 
@@ -73,26 +66,7 @@ public class EnemyAI : MonoBehaviour
         // Disable chasing behavior
         animator.SetBool("IsChasing", false);
 
-        // Start the dissolve effect
-        StartCoroutine(DissolveEffect());
+        // Get the DissolveEffect component and start the dissolve
     }
 
-    // Coroutine to handle the dissolve effect
-    private IEnumerator DissolveEffect()
-    {
-        float dissolveProgress = 0f;
-
-        while (dissolveProgress < 1f)
-        {
-            dissolveProgress += Time.deltaTime * dissolveSpeed;
-            enemyMaterial.SetFloat("_DissolveThreshold", dissolveProgress); // Update the dissolve threshold
-            yield return null;
-        }
-
-        // Fully dissolve the enemy
-        enemyMaterial.SetFloat("_DissolveThreshold", 1f);
-
-        // Destroy the enemy object after the dissolve effect is complete
-        Destroy(gameObject);
-    }
 }
