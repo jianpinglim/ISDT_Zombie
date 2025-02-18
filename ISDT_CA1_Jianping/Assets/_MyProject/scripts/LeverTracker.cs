@@ -61,6 +61,7 @@ public class LeverTracker : MonoBehaviour
     {
         if (!isPulled && !pulledLeverIds.Contains(leverID))
         {
+            // AudioManager.instance.PlaySfx("trainEngine");
             isPulled = true;
             leversPulled++;
             pulledLeverIds.Add(leverID);

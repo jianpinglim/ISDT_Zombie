@@ -1601,6 +1601,8 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 82c06384857833a4f9f2888f3d4dc8a4, type: 3}
   - soundName: playerHurt
     clip: {fileID: 8300000, guid: f6626765d76a65848bf8f7073e1d921e, type: 3}
+  - soundName: trainEngine
+    clip: {fileID: 8300000, guid: 7cf8d95ff953a2e439cc5359c947f559, type: 3}
   musicSource: {fileID: 2110401828}
   sfxSource: {fileID: 1055672790}
 --- !u!1 &869613492
