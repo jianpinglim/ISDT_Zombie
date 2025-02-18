@@ -17,6 +17,7 @@ public class GrenadeBehavior : MonoBehaviour
     private bool triggerPressed = false;    // Has the trigger been pressed?
     private float timer = 0.0f;
     private XRGrabInteractable grabInteractable;
+    //testing
 
     void Awake()
     {
