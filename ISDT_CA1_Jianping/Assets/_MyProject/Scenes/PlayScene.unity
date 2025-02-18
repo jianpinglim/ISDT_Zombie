@@ -2959,6 +2959,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3344895916621014509, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1382067655}
+    - targetCorrespondingSourceObject: {fileID: 3344895916621014509, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1382067656}
   m_SourcePrefab: {fileID: 100100000, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}
 --- !u!1 &1382067653 stripped
 GameObject:
@@ -2985,6 +2988,25 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1382067653}
   m_Enabled: 1
+--- !u!114 &1382067656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382067653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b73cb9adf99d60d4f892af679f92a8b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  onPlayerDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  onHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1386684908 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4264655425017748480, guid: 89b0906b0b9afcc48985cbd466b5d66a, type: 3}
@@ -3650,7 +3672,7 @@ Transform:
   m_GameObject: {fileID: 1770189893}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.51, y: 1.33, z: -0.92680967}
+  m_LocalPosition: {x: -37.82, y: 1.33, z: -0.92680967}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4670,8 +4692,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5195319533948786131, guid: 992198167f7b00c428af6ad9b190fd7d, type: 3}
+      propertyPath: maxHealth
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195319533948786131, guid: 992198167f7b00c428af6ad9b190fd7d, type: 3}
+      propertyPath: chaseRange
+      value: 20.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195319533948786131, guid: 992198167f7b00c428af6ad9b190fd7d, type: 3}
       propertyPath: attackRange
-      value: 2
+      value: 1.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 5195319533948786131, guid: 992198167f7b00c428af6ad9b190fd7d, type: 3}
+      propertyPath: rotationSpeed
+      value: 3.05
       objectReference: {fileID: 0}
     - target: {fileID: 5563062284960475430, guid: 992198167f7b00c428af6ad9b190fd7d, type: 3}
       propertyPath: m_Name

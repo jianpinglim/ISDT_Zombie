@@ -17,7 +17,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_MyProject/Scenes/PlayScene.unity
     guid: 8761857bd13910b4b832808b83dfa5ac
-  - enabled: 0
+  - enabled: 1
+    path: Assets/_MyProject/Scenes/WinScene.unity
+    guid: 39cf89153b7e81842bc19f91511fdfb4
+  - enabled: 1
     path: Assets/_MyProject/Scenes/EndScene.unity
     guid: 4c6b2cb4a9466c54791177014541d01e
   m_configObjects:

@@ -28,7 +28,7 @@ public class LeverTracker : MonoBehaviour
     void Start()
     {
         hingeJoint = GetComponent<HingeJoint>();
-        
+
         if (!gameStarted)
         {
             gameStarted = true;
@@ -61,11 +61,11 @@ public class LeverTracker : MonoBehaviour
     {
         if (!isPulled && !pulledLeverIds.Contains(leverID))
         {
-            // AudioManager.instance.PlaySfx("trainEngine");
+            AudioManager.instance.PlaySfx("trainEngine");
             isPulled = true;
             leversPulled++;
             pulledLeverIds.Add(leverID);
-            
+
             Debug.Log($"Lever {leverID} pulled. Total levers: {leversPulled}");
             onLeverPulled?.Invoke();
 
@@ -73,6 +73,12 @@ public class LeverTracker : MonoBehaviour
             completionTime = Time.time - startTime;
             leverDataList.Add(new LeverData(leverNumber, completionTime));
             ExportToCSV();
+
+            // Check if all levers are pulled
+            if (leversPulled >= totalLevers)
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("WinScene");
+            }
         }
     }
 

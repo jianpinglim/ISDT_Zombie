@@ -4,6 +4,12 @@ using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
 {
+    [Header("Attack Settings")]
+    public float attackRange = 2f;
+    public float attackCooldown = 2f;
+    public int attackDamage = 10;  // Add this line
+    private float nextAttackTime;
+
     [Header("Chase Settings")]
     private GameObject player;  // Changed to private since we'll find it automatically
     public float chaseRange = 10f;
@@ -19,11 +25,6 @@ public class EnemyAI : MonoBehaviour
     private NavMeshAgent m_agent;
     private Dissolver dissolver; // Add this reference
 
-
-    [Header("Attack Settings")]
-    public float attackRange = 2f;
-    public float attackCooldown = 2f;
-    private float nextAttackTime;
 
     [Header("Animation")]
     [SerializeField] private string chaseAnimParam = "IsChasing";
@@ -116,8 +117,17 @@ public class EnemyAI : MonoBehaviour
         if (Time.time >= nextAttackTime)
         {
             nextAttackTime = Time.time + attackCooldown;
-            Debug.Log("Zombie attacking!");
-            // Add attack logic here
+
+            // Try to get PlayerHealth component
+            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(attackDamage);
+                Debug.Log($"Zombie dealt {attackDamage} damage to player!");
+            }
+
+            // Trigger attack animation
+            animator.SetBool(attackAnimParam, true);
         }
     }
 
