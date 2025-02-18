@@ -7,31 +7,32 @@ using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
 {
-   private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "gamesave.json");
+    private static readonly string SavePath = Path.Combine(Application.persistentDataPath, "gamesave.json");
     private static readonly string EncryptionKey = "YourSecretKey123";
 
     public static void SaveGame(Player player)
-    {
-        SaveData saveData = new SaveData
+{
+    // Find tablet in the scene
+    TabletUIManager tablet = FindAnyObjectByType<TabletUIManager>();
+    
+    SaveData saveData = new SaveData
     {
         zombiesKilled = ZombieKillsManager.totalKills,
         leversPulled = LeverTracker.leversPulled,
         pulledLeverIds = LeverTracker.GetPulledLeverIds(),
-        playerTransform = new SerializableTransform(player.transform)
+        playerTransform = new SerializableTransform(player.transform),
+        tabletTransform = tablet != null ? new SerializableTransform(tablet.transform) : null
     };
-        Debug.Log($"Save file location: {SavePath}");
 
-        string json = JsonUtility.ToJson(saveData);
-        string encryptedJson = EncryptString(json);
-        File.WriteAllText(SavePath, encryptedJson);
-        Debug.Log("Game saved successfully!");
+    Debug.Log($"Saving player position: {player.transform.position}");
+    Debug.Log($"Saving tablet position: {(tablet != null ? tablet.transform.position.ToString() : "No tablet found")}");
+    Debug.Log($"Save file location: {SavePath}");
 
-        // Load menu scene additively to maintain persistent scene
-        SceneManager.LoadScene("Menu", LoadSceneMode.Additive);
-        // Unload the game scene
-        Scene currentScene = SceneManager.GetActiveScene();
-        SceneManager.UnloadSceneAsync(currentScene);
-    }
+    string json = JsonUtility.ToJson(saveData);
+    string encryptedJson = EncryptString(json);
+    File.WriteAllText(SavePath, encryptedJson);
+    Debug.Log("Game saved successfully!");
+}
 
     public static SaveData LoadGame()
     {

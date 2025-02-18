@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,74 +5,40 @@ public class Player : MonoBehaviour
 {
     private const string MENU_SCENE = "Menu";
     private const string PLAY_SCENE = "PlayScene";
-    [SerializeField] private Transform defaultSpawnPoint;
 
     void Start()
     {
-        // Make XR Rig persistent if not already
-        if (transform.root.gameObject.scene.name != "DontDestroyOnLoad")
-        {
-            DontDestroyOnLoad(transform.root.gameObject);
-        }
-
         if (SaveDataHolder.shouldLoadSave && SaveDataHolder.savedData != null)
         {
-            Debug.Log("Loading saved game state...");
-            // Restore game state
-            ZombieKillsManager.totalKills = SaveDataHolder.savedData.zombiesKilled;
-            LeverTracker.leversPulled = SaveDataHolder.savedData.leversPulled;
-
-            // Restore position
-            Vector3 savedPosition = new Vector3(
-                SaveDataHolder.savedData.playerTransform.position[0],
-                SaveDataHolder.savedData.playerTransform.position[1],
-                SaveDataHolder.savedData.playerTransform.position[2]
-            );
-
-            if (savedPosition.y > -100)
-            {
-                transform.position = savedPosition;
-                transform.rotation = new Quaternion(
-                    SaveDataHolder.savedData.playerTransform.rotation[0],
-                    SaveDataHolder.savedData.playerTransform.rotation[1],
-                    SaveDataHolder.savedData.playerTransform.rotation[2],
-                    SaveDataHolder.savedData.playerTransform.rotation[3]
-                );
-            }
-
-            // Reset the load flag
-            SaveDataHolder.shouldLoadSave = false;
-            SaveDataHolder.savedData = null;
-        }
-        else
-        {
-            Debug.Log("Starting new game...");
-            // Reset game state for new game
-            ZombieKillsManager.totalKills = 0;
-            LeverTracker.leversPulled = 0;
-
-            // Use spawn point
-            GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
-            if (spawnPoint != null)
-            {
-                transform.position = spawnPoint.transform.position;
-                transform.rotation = spawnPoint.transform.rotation;
-            }
+            LoadSavedState(SaveDataHolder.savedData);
         }
     }
 
-    public void SaveAndQuit()
+    private void LoadSavedState(SaveData saveData)
     {
-        // Save the game data
-        SaveManager.SaveGame(this);
-        Debug.Log("Game saved successfully");
+        Vector3 newPosition = new Vector3(
+            saveData.playerTransform.position[0],
+            saveData.playerTransform.position[1],
+            saveData.playerTransform.position[2]
+        );
 
-        // Quit the game
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        // Get the root XR Rig transform
+        Transform xrRigRoot = transform.root;
+        xrRigRoot.position = newPosition;
+        Debug.Log($"XR Rig Root position set to: {newPosition}");
+
+        xrRigRoot.rotation = new Quaternion(
+            saveData.playerTransform.rotation[0],
+            saveData.playerTransform.rotation[1],
+            saveData.playerTransform.rotation[2],
+            saveData.playerTransform.rotation[3]
+        );
+
+        ZombieKillsManager.totalKills = saveData.zombiesKilled;
+        LeverTracker.RestoreLeverStates(saveData.pulledLeverIds);
+
+        SaveDataHolder.shouldLoadSave = false;
+        SaveDataHolder.savedData = null;
     }
 
     public void LoadGame()
@@ -83,8 +48,14 @@ public class Player : MonoBehaviour
 
         if (saveData != null)
         {
+            Debug.Log($"Loading saved position: ({saveData.playerTransform.position[0]}, {saveData.playerTransform.position[1]}, {saveData.playerTransform.position[2]})");
+
+            // Store the data before scene load
             SaveDataHolder.savedData = saveData;
             SaveDataHolder.shouldLoadSave = true;
+
+            // Load scene - this will trigger Start() in the new scene
+            // which will then call LoadSavedState with the stored data
             SceneManager.LoadScene(PLAY_SCENE);
         }
         else
@@ -93,28 +64,17 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void StartNewGame()
+    public void SaveAndQuit()
     {
-        Debug.Log("Starting new game...");
-        // Reset all game state
-        ZombieKillsManager.totalKills = 0;
-        LeverTracker.ResetAllLevers();
+        SaveManager.SaveGame(this);
+        Debug.Log("Game saved successfully");
 
-        // Use spawn point for new game
-        GameObject spawnPoint = GameObject.FindGameObjectWithTag("PlayerSpawn");
-        if (spawnPoint != null)
-        {
-            transform.position = spawnPoint.transform.position;
-            transform.rotation = spawnPoint.transform.rotation;
-        }
-
-        SaveDataHolder.shouldLoadSave = false;
-        SaveDataHolder.savedData = null;
-
-        // Load play scene
-        SceneManager.LoadScene(PLAY_SCENE);
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
     }
-
 }
 
 public static class SaveDataHolder

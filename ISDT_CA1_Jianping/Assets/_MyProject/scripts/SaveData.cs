@@ -3,10 +3,11 @@ using System;
 [Serializable]
 public class SaveData
 {
+    public SerializableTransform playerTransform;
+    public SerializableTransform tabletTransform;  // Add this line
     public int zombiesKilled;
     public int leversPulled;
-    public string[] pulledLeverIds; 
-    public SerializableTransform playerTransform;
+    public string[] pulledLeverIds;
 }
 
 [Serializable]

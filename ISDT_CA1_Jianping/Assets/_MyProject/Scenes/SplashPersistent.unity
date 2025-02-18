@@ -364,6 +364,10 @@ PrefabInstance:
       value: XR Origin (XR Rig)
       objectReference: {fileID: 0}
     - target: {fileID: 3344895916621014509, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3344895916621014509, guid: 5fed0d1e5889eac47a1b35283a5bd1e4, type: 3}
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
